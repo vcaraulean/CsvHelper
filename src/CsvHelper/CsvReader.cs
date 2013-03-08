@@ -35,6 +35,7 @@ namespace CsvHelper
 		private ICsvParser parser;
 		private int currentIndex = -1;
 		private bool doneReading;
+		private Dictionary<string, object> cache; 
 		private readonly Dictionary<string, List<int>> namedIndexes = new Dictionary<string, List<int>>();
 #if !NET_2_0
 		private readonly Dictionary<Type, Delegate> recordFuncs = new Dictionary<Type, Delegate>();
@@ -84,6 +85,14 @@ namespace CsvHelper
 				return currentRecord;
 			}
 		}
+
+		/// <summary>
+		/// Gets the cache. The cache is used to store
+		/// arbitrary data. This is useful if you are
+		/// using a ConvertUsing in a mapping and want
+		/// to store data in between property mapping calls.
+		/// </summary>
+		public Dictionary<string, object> Cache { get { return cache; } } 
 
 		/// <summary>
 		/// Creates a new CSV reader using the given <see cref="TextReader"/> and
@@ -176,6 +185,7 @@ namespace CsvHelper
 
 			currentIndex = -1;
 			hasBeenRead = true;
+			cache = new Dictionary<string, object>();
 
 			if( currentRecord == null )
 			{

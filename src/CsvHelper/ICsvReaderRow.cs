@@ -44,6 +44,14 @@ namespace CsvHelper
 		string this[ string name, int index ] { get; }
 
 		/// <summary>
+		/// Gets the cache. The cache is used to store
+		/// arbitrary data. This is useful if you are
+		/// using a ConvertUsing in a mapping and want
+		/// to store data in between property mapping calls.
+		/// </summary>
+		Dictionary<string, object> Cache { get; }
+
+		/// <summary>
 		/// Gets the raw field at position (column) index.
 		/// </summary>
 		/// <param name="index">The zero based index of the field.</param>

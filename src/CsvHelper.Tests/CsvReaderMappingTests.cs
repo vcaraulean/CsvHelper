@@ -106,9 +106,43 @@ namespace CsvHelper.Tests
 			Assert.AreEqual( 7, records[1].IntColumn );
 		}
 
+		[TestMethod]
+		public void ReaderCacheTest()
+		{
+			var queue = new Queue<string[]>();
+			queue.Enqueue( new[] { "2", "3", "4" } );
+			queue.Enqueue( new[] { "3", "1", "2" } );
+			queue.Enqueue( null );
+
+			var parserMock = new ParserMock( queue );
+
+			var csvReader = new CsvReader( parserMock );
+			csvReader.Configuration.HasHeaderRecord = false;
+			csvReader.Configuration.ClassMapping<CacheMap>();
+
+			var records = csvReader.GetRecords<TwoIntClass>().ToList();
+
+			Assert.IsNotNull( records );
+			Assert.AreEqual( 2, records.Count );
+			Assert.AreEqual( 6, records[0].Int1Column );
+			Assert.AreEqual( 8, records[0].Int2Column );
+
+			// Make sure the cache has been reset on
+			// for the second row.
+			Assert.AreEqual( 3, records[1].Int1Column );
+			Assert.AreEqual( 6, records[1].Int2Column );
+		}
+
 		private class TestClass
 		{
 			public int IntColumn { get; set; }
+		}
+
+		private class TwoIntClass
+		{
+			public int Int1Column { get; set; }
+
+			public int Int2Column { get; set; }
 		}
 
 		private class MultipleNamesAttributeClass
@@ -159,6 +193,35 @@ namespace CsvHelper.Tests
 					var y = row.GetField<int>( 1 );
 					return x + y;
 				} );
+			}
+		}
+
+		private sealed  class CacheMap : CsvClassMap<TwoIntClass>
+		{
+			public CacheMap()
+			{
+				Map( m => m.Int1Column ).ConvertUsing( row =>
+				{
+					var multiplier = GetMultiplier( row );
+					return multiplier * row.GetField<int>( 1 );
+				} );
+
+				Map( m => m.Int2Column ).ConvertUsing( row =>
+				{
+					var multiplier = GetMultiplier( row );
+					return multiplier * row.GetField<int>( 2 );
+				} );
+			}
+
+			private int GetMultiplier( ICsvReaderRow row )
+			{
+				object multiplier;
+				if( !row.Cache.TryGetValue( "multiplier", out multiplier ) )
+				{
+					multiplier = row.GetField<int>( 0 );
+					row.Cache["multiplier"] = multiplier;
+				}
+				return (int)multiplier;
 			}
 		}
 	}
