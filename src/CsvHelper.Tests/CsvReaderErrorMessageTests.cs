@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Linq;
 using CsvHelper.Configuration;
+using CsvHelper.TypeConversion;
 #if WINRT_4_5
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 #else
@@ -37,18 +38,13 @@ namespace CsvHelper.Tests
 					var records = csvReader.GetRecords<Test1>().ToList();
 					throw new Exception();
 				}
-				catch( CsvReaderException ex )
+				catch( CsvTypeConverterException ex )
 				{
-					Assert.IsTrue( ex.ToString().Contains( "Row: '1'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Index: '0'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Row: '1'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Index: '0'" ) );
 					// There is no header so a field name should not be in the message.
-					Assert.IsTrue( !ex.ToString().Contains( "Field Name: 'IntColumn'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Value: ''" ) );
-
-					Assert.AreEqual( 1, ex.Row );
-					Assert.AreEqual( 0, ex.FieldIndex );
-					Assert.IsNull( ex.FieldName );
-					Assert.AreEqual( string.Empty, ex.FieldValue );
+					Assert.IsTrue( !ex.Data["CsvHelper"].ToString().Contains( "Field Name: 'IntColumn'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Value: ''" ) );
 				}
 			}
 		}
@@ -73,17 +69,12 @@ namespace CsvHelper.Tests
 					var records = csvReader.GetRecords<Test1>().ToList();
 					throw new Exception();
 				}
-				catch( CsvReaderException ex )
+				catch( CsvTypeConverterException ex )
 				{
-					Assert.IsTrue( ex.ToString().Contains( "Row: '3'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Index: '0'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Name: 'IntColumn'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Value: ''" ) );
-
-					Assert.AreEqual( 3, ex.Row );
-					Assert.AreEqual( 0, ex.FieldIndex );
-					Assert.AreEqual( "IntColumn", ex.FieldName );
-					Assert.AreEqual( string.Empty, ex.FieldValue );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Row: '3'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Index: '0'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Name: 'IntColumn'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Value: ''" ) );
 				}
 			}
 		}
@@ -110,17 +101,12 @@ namespace CsvHelper.Tests
 					var records = csvReader.GetRecords<Test1>().ToList();
 					throw new Exception();
 				}
-				catch( CsvReaderException ex )
+				catch( CsvTypeConverterException ex )
 				{
-					Assert.IsTrue( ex.ToString().Contains( "Row: '4'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Index: '0'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Name: 'IntColumn'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Value: ''" ) );
-
-					Assert.AreEqual( 4, ex.Row );
-					Assert.AreEqual( 0, ex.FieldIndex );
-					Assert.AreEqual( "IntColumn", ex.FieldName );
-					Assert.AreEqual( string.Empty, ex.FieldValue );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Row: '4'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Index: '0'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Name: 'IntColumn'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Value: ''" ) );
 				}
 			}
 		}
@@ -145,17 +131,12 @@ namespace CsvHelper.Tests
 					var records = csvReader.GetRecords<Test1>().ToList();
 					throw new Exception();
 				}
-				catch( CsvReaderException ex )
+				catch( CsvTypeConverterException ex )
 				{
-					Assert.IsTrue( ex.ToString().Contains( "Row: '3'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Index: '0'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Name: 'IntColumn'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Value: 'one'" ) );
-
-					Assert.AreEqual( 3, ex.Row );
-					Assert.AreEqual( 0, ex.FieldIndex );
-					Assert.AreEqual( "IntColumn", ex.FieldName );
-					Assert.AreEqual( "one", ex.FieldValue );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Row: '3'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Index: '0'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Name: 'IntColumn'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Value: 'one'" ) );
 				}
 			}
 		}
@@ -179,12 +160,12 @@ namespace CsvHelper.Tests
 					var records = csvReader.GetRecords<Test2>().ToList();
 					throw new Exception();
 				}
-				catch( CsvReaderException ex )
+				catch( CsvTypeConverterException ex )
 				{
-					Assert.IsTrue( ex.ToString().Contains( "Row: '2'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Index: '1'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Name: 'IntColumn'" ) );
-					Assert.IsTrue( ex.ToString().Contains( "Field Value: ''" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Row: '2'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Index: '1'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Name: 'IntColumn'" ) );
+					Assert.IsTrue( ex.Data["CsvHelper"].ToString().Contains( "Field Value: ''" ) );
 				}
 			}
 		}

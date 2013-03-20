@@ -14,29 +14,46 @@ namespace CsvHelper
 	internal static class ExceptionHelper
 	{
 		/// <summary>
-		/// Gets a new exception with more detailed information.
+		/// Adds CsvHelper specific information to <see cref="Exception.Data"/>.
 		/// </summary>
-		/// <typeparam name="TException">The type of the exception to create.</typeparam>
-		/// <param name="message">The exception message.</param>
-		/// <param name="innerException">The inner exception.</param>
-		/// <param name="parser">The <see cref="ICsvParser" />.</param>
-		/// <param name="type">The type the <see cref="ICsvReader" /> was trying to create.</param>
-		/// <param name="namedIndexes">The readers named indexes.</param>
-		/// <param name="currentIndex">The current reader index.</param>
-		/// <param name="currentRecord">The current reader record.</param>
-		/// <returns></returns>
-		public static TException GetReaderException<TException>( string message, Exception innerException, ICsvParser parser, Type type, Dictionary<string, List<int>> namedIndexes, int? currentIndex, string[] currentRecord )
-			where TException : CsvHelperException
+		/// <param name="exception">The exception to add the info to.</param>
+		/// <param name="parser">The parser.</param>
+		/// <param name="type">The type of object that was being created in the <see cref="CsvReader"/>.</param>
+		/// <param name="namedIndexes">The named indexes in the <see cref="CsvReader"/>.</param>
+		/// <param name="currentIndex">The current index of the <see cref="CsvReader"/>.</param>
+		/// <param name="currentRecord">The current record of the <see cref="CsvReader"/>.</param>
+		public static void AddExceptionDataMessage( Exception exception, ICsvParser parser, Type type, Dictionary<string, List<int>> namedIndexes, int? currentIndex, string[] currentRecord )
 		{
-			if( string.IsNullOrEmpty( message ) )
+			// An error could occur in the parser and get this message set on it, then occur in the
+			// reader and have it set again. This is ok because when the reader calls this method,
+			// it will have extra info to be added.
+
+			try
 			{
-				throw new ArgumentNullException( "message" );
+				exception.Data["CsvHelper"] = GetErrorMessage( parser, type, namedIndexes, currentIndex, currentRecord );
 			}
+			catch( Exception ex )
+			{
+				var exString = new StringBuilder();
+				exString.AppendLine( "An error occurred while creating exception details." );
+				exString.AppendLine();
+				exString.AppendLine( ex.ToString() );
+				exception.Data["CsvHelper"] = exString.ToString();
+			}
+		}
 
+		/// <summary>
+		/// Gets CsvHelper information to be added to an exception.
+		/// </summary>
+		/// <param name="parser">The parser.</param>
+		/// <param name="type">The type of object that was being created in the <see cref="CsvReader"/>.</param>
+		/// <param name="namedIndexes">The named indexes in the <see cref="CsvReader"/>.</param>
+		/// <param name="currentIndex">The current index of the <see cref="CsvReader"/>.</param>
+		/// <param name="currentRecord">The current record of the <see cref="CsvReader"/>.</param>
+		/// <returns>The CsvHelper information.</returns>
+		public static string GetErrorMessage( ICsvParser parser, Type type, Dictionary<string, List<int>> namedIndexes, int? currentIndex, string[] currentRecord )
+		{
 			var messageInfo = new StringBuilder();
-
-			messageInfo.AppendLine( message );
-			messageInfo.AppendLine();
 
 			messageInfo.AppendFormat( "Row: '{0}' (1 based)", parser.Row ).AppendLine();
 
@@ -50,7 +67,7 @@ namespace CsvHelper
 				messageInfo.AppendFormat( "Field Index: '{0}' (0 based)", currentIndex ).AppendLine();
 			}
 
-			string fieldName = null;
+			string fieldName;
 #if !NET_2_0
 			if( parser.Configuration.HasHeaderRecord && namedIndexes != null )
 			{
@@ -65,13 +82,17 @@ namespace CsvHelper
 			}
 #endif
 
-			string fieldValue = null;
+			string fieldValue;
 			if( currentIndex.HasValue && currentRecord != null && currentIndex < currentRecord.Length )
 			{
-				fieldValue = currentRecord[currentIndex.Value];
-				messageInfo.AppendFormat( "Field Value: '{0}'", currentRecord[currentIndex.Value] ).AppendLine();
+				if( currentIndex.Value < currentRecord.Length )
+				{
+					fieldValue = currentRecord[currentIndex.Value];
+					messageInfo.AppendFormat( "Field Value: '{0}'", fieldValue ).AppendLine();
+				}
 			}
 
+			/*
 			var exception = (TException)Activator.CreateInstance( typeof( TException ), messageInfo.ToString(), innerException );
 
 			var parserInfo = exception as ICsvParserExceptionInfo;
@@ -89,8 +110,9 @@ namespace CsvHelper
 				readerInfo.FieldName = fieldName;
 				readerInfo.FieldValue = fieldValue;
 			}
+			 * */
 
-			return exception;
+			return messageInfo.ToString();
 		}
 	}
 }
